@@ -1,0 +1,23 @@
+insert single object 
+db.users.insertMany ([{
+    name: "Subarika",
+    address: "Sydney",
+    number: "126536"
+},
+
+{
+    name: "Ashika",
+    address: "Sydney",
+    email: "a@a.com"
+},
+
+{
+    name: "Samikshya",
+    address: "Sydney",
+ email: "s@a.com"
+}
+])
+
+ db.users.updateOne({name: "Akriti"}, {$set: {address: "USA"}})
+
+ db.users.deleteOne({_id: ObjectId('661df16c61ac6a7bd7117b7b')})
