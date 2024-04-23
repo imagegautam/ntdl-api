@@ -1,72 +1,110 @@
-import express from 'express';
+import express from "express";
+import { idGenerator } from "../utils.js";
+import {
+  delteTask,
+  getTasks,
+  insertTask,
+  updateTask,
+} from "../model/task/TaskModel.js";
 const router = express.Router();
 
-import {idGenerator} from '../utils.js'
-import { insertTask } from '../model/task/TaskModel.js';
-
-
-let fakeDb = []
+let fakeDb = [];
 
 //controllers
 
-
 //get data
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
+  try {
+    //db query to get the data
+    const tasks = await getTasks();
+    console.log(tasks);
     res.json({
-        message: "Here are the task",
-        data: fakeDb,
+      status: "success",
+      message: "Here are the tasks",
+      tasks,
     });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+      tasks,
+    });
+  }
 });
 
-//post data
+//Post data
 router.post("/", async (req, res) => {
+  try {
+    const result = await insertTask(req.body);
 
-    try{
-        const result = await insertTask(req.body);
-        result?._id ?
-        res.json({
-            message: "New task has been added"
-        }):
-        res.json({
-            message: "Failed to add new data"
+    result?._id
+      ? res.json({
+          status: "success",
+          message: "New task has been added",
+        })
+      : res.json({
+          status: "error",
+          message: "Failed to add new data",
         });
-
-    }catch(error){
-        console.log(error)
-    }
-    // const id = idGenerator();
-
-    // fakeDb.push({...req.body, id});
-    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+  // const id = idGenerator()
+  // fakeDb.push({ ...req.body, id });
 });
 
 //update task
-router.patch("/", (req, res) =>{
-    const {id, type} = req.body;
-    console.log(id, type);
-    fakeDb = fakeDb.map((item) =>{
-        if(item.id === id){
-            return {...item, type} //item.type == ""
-        }
+router.patch("/", async (req, res) => {
+  try {
+    const result = await updateTask(req.body);
 
-        return item
-    })
+    console.log(result);
 
-    res.json({
-        message: "Your task has been updated",
+    result?._id
+      ? res.json({
+          status: "success",
+          message: "Your task has been updated",
+        })
+      : res.json({
+          status: "error",
+          message: "No change made in the db, may be invalid data request",
+        });
+  } catch (error) {
+    // console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: "something went wrong, try again later.",
     });
+  }
 });
+//delete task
+router.delete("/", async (req, res) => {
+  try {
+    const ids = req.body;
+    console.log(ids)
 
-//update task
-router.delete("/", (req, res) =>{
-    const {id, type} = req.body;
-    console.log(id, type);
-    fakeDb = fakeDb.filter(item=> item.id !=id) 
+    const result = await delteTask(ids);
 
-    res.json({
-        message: "Your task has been delted",
+    result?.deletedCount
+      ? res.json({
+          status: "success",
+          message: "Your task has been Deleted",
+        })
+      : res.json({
+          status: "error",
+          message: "Unable to delete, try again later",
+        });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: "something went wrong, try again later.",
     });
+  }
 });
-
 
 export default router;
